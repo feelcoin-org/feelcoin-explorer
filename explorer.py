@@ -77,6 +77,97 @@ def get_transactions(tx_hash):
     )
 
 
+def get_transactions_many(tx_hashes):
+    if not tx_hashes:
+        return {"txs": []}
+
+    return http_post(
+        "/get_transactions",
+        {
+            "txs_hashes": list(tx_hashes),
+            "decode_as_json": True,
+            "prune": False
+        }
+    )
+
+
+def enrich_block_reward(result):
+    """
+    Add Feelcoin reward breakdown using the actual coinbase outputs.
+
+    From height 590:
+      vout[0] = miner / pool reward
+      vout[1] = development treasury
+
+    Transaction fees are summed from the block's normal transactions.
+    """
+    block_result = result.get("result", {})
+
+    if not block_result:
+        return result
+
+    header = block_result.get("block_header", {})
+    height = int(header.get("height", 0))
+    total_reward = int(header.get("reward", 0))
+
+    try:
+        block_json = json.loads(block_result.get("json", "{}"))
+    except Exception:
+        block_json = {}
+
+    miner_tx = block_json.get("miner_tx", {})
+    vout = miner_tx.get("vout", [])
+
+    miner_reward = 0
+    treasury_reward = 0
+
+    if len(vout) >= 1:
+        miner_reward = int(vout[0].get("amount", 0))
+
+    if height >= 590 and len(vout) >= 2:
+        treasury_reward = int(vout[1].get("amount", 0))
+
+    tx_fees = 0
+    tx_hashes = block_result.get("tx_hashes", [])
+
+    if tx_hashes:
+        try:
+            tx_data = get_transactions_many(tx_hashes)
+
+            for tx in tx_data.get("txs", []):
+                try:
+                    tx_json = json.loads(tx.get("as_json", "{}"))
+                except Exception:
+                    tx_json = {}
+
+                fee = 0
+
+                rct = tx_json.get("rct_signatures", {})
+                if isinstance(rct, dict):
+                    fee = rct.get("txnFee", 0)
+
+                if not fee:
+                    fee = tx_json.get("fee", 0)
+
+                try:
+                    tx_fees += int(fee)
+                except Exception:
+                    pass
+
+        except Exception:
+            tx_fees = None
+
+    block_result["reward_breakdown"] = {
+        "total": total_reward,
+        "miner": miner_reward,
+        "treasury": treasury_reward,
+        "fees": tx_fees,
+        "activation_height": 590
+    }
+
+    return result
+
+
 HTML = """<!doctype html>
 <html lang="en">
 <head>
@@ -807,6 +898,22 @@ function renderBlock(data){
 
   const result = data.data.result || {};
   const header = result.block_header || {};
+  const rewards = result.reward_breakdown || {};
+
+  const rewardDetails =
+    Number(header.height) >= 590
+      ? `
+        ${resultBox("Total Reward",feel(rewards.total ?? header.reward))}
+        ${resultBox("Miner / Pool Reward",feel(rewards.miner))}
+        ${resultBox("Development Treasury",feel(rewards.treasury))}
+        ${resultBox(
+          "Transaction Fees",
+          rewards.fees === null || rewards.fees === undefined
+            ? "Unavailable"
+            : feel(rewards.fees)
+        )}
+      `
+      : `${resultBox("Reward",feel(header.reward))}`;
 
   $("resultDetails").innerHTML = `
     <div class="result-grid">
@@ -817,7 +924,7 @@ function renderBlock(data){
       ${resultBox("Timestamp",header.timestamp)}
       ${resultBox("Age",age(header.timestamp))}
       ${resultBox("Difficulty",number(header.difficulty))}
-      ${resultBox("Reward",feel(header.reward))}
+      ${rewardDetails}
       ${resultBox("Transactions",number(header.num_txes))}
       ${resultBox("Block Size",number(header.block_size))}
       ${resultBox("Block Weight",number(header.block_weight))}
@@ -1102,6 +1209,8 @@ class Handler(BaseHTTPRequestHandler):
                             404
                         )
 
+                    result = enrich_block_reward(result)
+
                     return self.send_json(
                         {
                             "type":
@@ -1132,6 +1241,8 @@ class Handler(BaseHTTPRequestHandler):
                         )
 
                         if block_result:
+                            block = enrich_block_reward(block)
+
                             return self.send_json(
                                 {
                                     "type":
