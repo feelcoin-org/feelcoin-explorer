@@ -623,7 +623,10 @@ $("year").textContent = new Date().getFullYear();
 function number(n){
   return Number(n || 0).toLocaleString();
 }
-
+function feel(value){
+  const n = Number(value || 0);
+  return (n / 1_000_000_000_000).toFixed(12) + " FEEL";
+}
 
 function hashRate(h){
   h = Number(h || 0);
@@ -758,7 +761,7 @@ async function loadHome(){
         </td>
 
         <td>
-          ${number(b.reward)}
+         ${feel(b.reward)}
         </td>
       `;
 
@@ -814,7 +817,7 @@ function renderBlock(data){
       ${resultBox("Timestamp",header.timestamp)}
       ${resultBox("Age",age(header.timestamp))}
       ${resultBox("Difficulty",number(header.difficulty))}
-      ${resultBox("Reward",number(header.reward))}
+      ${resultBox("Reward",feel(header.reward))}
       ${resultBox("Transactions",number(header.num_txes))}
       ${resultBox("Block Size",number(header.block_size))}
       ${resultBox("Block Weight",number(header.block_weight))}
