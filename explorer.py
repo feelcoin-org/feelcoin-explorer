@@ -1,3 +1,4 @@
+import time
 #!/usr/bin/env python3
 
 import json
@@ -7,7 +8,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse, parse_qs
 
 RPC = "http://127.0.0.1:35781"
-HOST = "0.0.0.0"
+HOST = "127.0.0.1"
 PORT = 8081
 
 
@@ -177,6 +178,10 @@ HTML = """<!doctype html>
 
 <title>Feelcoin Block Explorer</title>
 
+<link rel="icon" type="image/webp" href="/assets/feelcoin-coin.webp">
+<link rel="apple-touch-icon" href="/assets/feelcoin-coin.webp">
+
+
 <style>
 :root{
   --bg:#070b14;
@@ -197,10 +202,16 @@ body{
   min-height:100vh;
   color:var(--text);
   font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+
   background:
-    radial-gradient(circle at 20% -10%,rgba(124,92,255,.18),transparent 36%),
-    radial-gradient(circle at 90% 0%,rgba(34,211,166,.08),transparent 30%),
-    var(--bg);
+    linear-gradient(
+      180deg,
+      rgba(5,8,14,.78) 0%,
+      rgba(5,8,14,.86) 55%,
+      rgba(5,8,14,.92) 100%
+    ),
+    url("/assets/feelcoin-community.webp")
+    center center / cover fixed no-repeat;
 }
 
 a{
@@ -481,7 +492,8 @@ footer{
   }
 
   nav{
-    display:none;
+    display:flex;
+    flex-wrap:wrap;
   }
 }
 
@@ -525,6 +537,59 @@ footer{
     flex-direction:column;
   }
 }
+
+/* Feelcoin community glass theme */
+header,
+.card,
+.panel,
+.search-box,
+.result,
+.stat,
+.block-card,
+.tx-card {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+@media (max-width:720px){
+  body{
+    background-attachment:scroll;
+  }
+}
+
+
+/* ===== FEELCOIN RESPONSIVE NAV FIX ===== */
+@media (max-width: 950px) {
+  header {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  nav {
+    display: flex !important;
+    flex-wrap: wrap;
+    width: 100%;
+    order: 3;
+    gap: 6px;
+  }
+
+  nav a {
+    flex: 1 1 auto;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .online {
+    margin-left: auto;
+  }
+}
+
+@media (max-width: 520px) {
+  nav a {
+    flex: 1 1 calc(50% - 6px);
+  }
+}
+
 </style>
 </head>
 
@@ -548,7 +613,8 @@ footer{
 
 <nav>
 <a href="/">Explorer</a>
-<a href="http://162.35.27.43:4243">Mining Pool</a>
+<a href="https://feelcoin.org" target="_blank" rel="noopener noreferrer">Website</a>
+<a href="https://pool.feelcoin.org" target="_blank" rel="noopener noreferrer">Mining Pool</a>
 </nav>
 
 <div class="online">
@@ -738,10 +804,16 @@ function hashRate(h){
 }
 
 
+let serverTimeOffset = 0;
+
 function age(ts){
+  const now =
+    Date.now() / 1000 +
+    serverTimeOffset;
+
   const diff = Math.max(
     0,
-    Date.now() / 1000 - Number(ts || 0)
+    now - Number(ts || 0)
   );
 
   if(diff < 60)
@@ -789,6 +861,12 @@ async function loadHome(){
 
     const data = await response.json();
     const info = data.info;
+
+    if(data.server_time){
+      serverTimeOffset =
+        Number(data.server_time) -
+        Date.now() / 1000;
+    }
 
     $("height").textContent =
       number(info.height);
@@ -1172,7 +1250,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send_json(
                     {
                         "info": info,
-                        "blocks": blocks
+                        "blocks": blocks,
+                        "server_time": int(time.time())
                     }
                 )
 
