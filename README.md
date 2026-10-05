@@ -20,3 +20,9 @@ TLS mining: `pool.feelcoin.org:4244`
 `feelcoin.org` is the canonical public domain for the Feelcoin ecosystem.
 <!-- FEELCOIN-OFFICIAL-LINKS:END -->
 
+
+## Contact
+
+Official Feelcoin support and project contact:
+
+**support@feelcoin.org**
