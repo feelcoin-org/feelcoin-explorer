@@ -176,7 +176,7 @@ HTML = """<!doctype html>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#070b14">
 
-<title>Feelcoin Block Explorer</title>
+<title>Feelcoin Explorer | FEEL Blockchain Explorer</title>
 
 <link rel="icon" type="image/webp" href="/assets/feelcoin-coin.webp">
 <link rel="apple-touch-icon" href="/assets/feelcoin-coin.webp">
@@ -230,8 +230,8 @@ button,input{
 }
 
 header{
-  position:sticky;
-  top:12px;
+  position:relative;
+  top:auto;
   z-index:20;
 
   display:flex;
@@ -590,7 +590,370 @@ header,
   }
 }
 
+
+
+/* ===== FEELCOIN EXPLORER LIVE NETWORK ===== */
+
+.feel-live-network{
+  margin-top:18px;
+}
+
+.feel-live-network-card{
+  padding:18px 20px;
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(124,92,255,.12),
+      transparent 36%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(17,26,43,.96),
+      rgba(10,17,30,.96)
+    );
+  border:1px solid var(--line);
+  border-radius:17px;
+}
+
+.feel-live-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  margin-bottom:14px;
+}
+
+.feel-live-title{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  font-size:12px;
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:.10em;
+}
+
+.feel-live-master-dot,
+.feel-node-dot{
+  width:9px;
+  height:9px;
+  border-radius:50%;
+  background:#738096;
+  display:inline-block;
+}
+
+.feel-live-master-dot.online,
+.feel-node-dot.online{
+  background:var(--green);
+  box-shadow:0 0 14px rgba(34,211,166,.65);
+}
+
+.feel-live-master-dot.warning,
+.feel-node-dot.warning{
+  background:#e6ab45;
+  box-shadow:0 0 12px rgba(230,171,69,.35);
+}
+
+.feel-live-updated{
+  color:var(--muted);
+  font-size:11px;
+  white-space:nowrap;
+}
+
+.feel-live-grid{
+  display:grid;
+  grid-template-columns:repeat(6,minmax(0,1fr));
+  gap:10px;
+}
+
+.feel-live-item{
+  min-width:0;
+  padding:13px;
+  background:#08101d;
+  border:1px solid rgba(255,255,255,.055);
+  border-radius:12px;
+}
+
+.feel-live-item .label{
+  margin-bottom:6px;
+}
+
+.feel-live-value{
+  font-size:15px;
+  font-weight:850;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.feel-live-node{
+  display:flex;
+  align-items:center;
+  gap:7px;
+}
+
+.feel-live-sub{
+  margin-top:5px;
+  color:var(--muted);
+  font-size:10px;
+}
+
+@media(max-width:1000px){
+  .feel-live-grid{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+  }
+}
+
+@media(max-width:600px){
+  .feel-live-head{
+    flex-direction:column;
+    align-items:flex-start;
+    gap:5px;
+  }
+
+  .feel-live-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+
+  .feel-live-network-card{
+    padding:16px;
+  }
+}
+
+/* ===== END FEELCOIN EXPLORER LIVE NETWORK ===== */
+
+
+
+/* ===== FEELCOIN FULL GLASS THEME ===== */
+
+header{
+  background:rgba(13,20,34,.72) !important;
+  border:1px solid rgba(255,255,255,.08) !important;
+
+  backdrop-filter:blur(16px) saturate(115%) !important;
+  -webkit-backdrop-filter:blur(16px) saturate(115%) !important;
+
+  box-shadow:
+    0 10px 35px rgba(0,0,0,.18),
+    inset 0 1px 0 rgba(255,255,255,.035);
+}
+
+
+.hero{
+  background:
+    linear-gradient(
+      180deg,
+      rgba(17,26,43,.70),
+      rgba(10,17,30,.64)
+    ) !important;
+
+  border:1px solid rgba(255,255,255,.08) !important;
+
+  backdrop-filter:blur(15px) saturate(115%) !important;
+  -webkit-backdrop-filter:blur(15px) saturate(115%) !important;
+
+  box-shadow:
+    0 12px 35px rgba(0,0,0,.18),
+    inset 0 1px 0 rgba(255,255,255,.025);
+}
+
+
+.card{
+  background:
+    linear-gradient(
+      180deg,
+      rgba(17,26,43,.68),
+      rgba(10,17,30,.62)
+    ) !important;
+
+  border:1px solid rgba(255,255,255,.075) !important;
+
+  backdrop-filter:blur(14px) saturate(110%) !important;
+  -webkit-backdrop-filter:blur(14px) saturate(110%) !important;
+
+  box-shadow:
+    0 10px 30px rgba(0,0,0,.16),
+    inset 0 1px 0 rgba(255,255,255,.025);
+}
+
+
+.metric{
+  background:
+    linear-gradient(
+      180deg,
+      rgba(17,26,43,.63),
+      rgba(10,17,30,.57)
+    ) !important;
+}
+
+
+.section{
+  background:
+    linear-gradient(
+      180deg,
+      rgba(17,26,43,.66),
+      rgba(10,17,30,.60)
+    ) !important;
+}
+
+
+.search input{
+  background:rgba(8,16,29,.56) !important;
+  border:1px solid rgba(255,255,255,.09) !important;
+
+  backdrop-filter:blur(8px) !important;
+  -webkit-backdrop-filter:blur(8px) !important;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.02);
+}
+
+
+.result-box{
+  background:rgba(8,16,29,.55) !important;
+  border:1px solid rgba(255,255,255,.07) !important;
+
+  backdrop-filter:blur(9px) !important;
+  -webkit-backdrop-filter:blur(9px) !important;
+}
+
+
+.raw{
+  background:rgba(5,10,18,.60) !important;
+  border:1px solid rgba(255,255,255,.07) !important;
+
+  backdrop-filter:blur(8px) !important;
+  -webkit-backdrop-filter:blur(8px) !important;
+}
+
+
+.feel-live-network-card{
+  background:
+    linear-gradient(
+      180deg,
+      rgba(17,26,43,.68),
+      rgba(10,17,30,.62)
+    ) !important;
+
+  border:1px solid rgba(255,255,255,.075) !important;
+
+  backdrop-filter:blur(14px) saturate(110%) !important;
+  -webkit-backdrop-filter:blur(14px) saturate(110%) !important;
+
+  box-shadow:
+    0 10px 30px rgba(0,0,0,.16),
+    inset 0 1px 0 rgba(255,255,255,.025);
+}
+
+
+.feel-live-item{
+  background:rgba(8,16,29,.52) !important;
+  border:1px solid rgba(255,255,255,.055) !important;
+
+  backdrop-filter:blur(8px) !important;
+  -webkit-backdrop-filter:blur(8px) !important;
+}
+
+
+table{
+  background:transparent !important;
+}
+
+
+th,
+td{
+  background:transparent !important;
+}
+
+
+footer{
+  background:rgba(8,14,24,.34);
+  border:1px solid rgba(255,255,255,.045);
+  border-radius:14px;
+
+  padding:18px 20px !important;
+  margin-top:18px;
+
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+}
+
+
+/* Slightly brighten text on glass surfaces */
+
+.label,
+.sub{
+  text-shadow:0 1px 2px rgba(0,0,0,.35);
+}
+
+
+.big,
+.feel-live-value{
+  text-shadow:0 2px 5px rgba(0,0,0,.35);
+}
+
+
+/* ===== END FEELCOIN FULL GLASS THEME ===== */
+
+
+
+/* Hide legacy footer refresh timestamp */
+#updated{
+  display:none !important;
+}
+
 </style>
+
+<!-- FEELCOIN EXPLORER SEO START -->
+
+<meta name="description"
+content="Official Feelcoin blockchain explorer. Inspect FEEL blocks, transactions, network difficulty, rewards, treasury allocations and live blockchain activity.">
+
+<meta name="keywords"
+content="Feelcoin, FEEL, cryptocurrency, blockchain, RandomX, Proof of Work, CPU mining, crypto wallet, mining pool, blockchain explorer, non-custodial wallet, open source cryptocurrency">
+
+<meta name="robots"
+content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
+
+<meta name="author" content="feelcoin-dev">
+
+<link rel="canonical" href="https://explorer.feelcoin.org/">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Feelcoin">
+<meta property="og:title" content="Feelcoin Explorer | FEEL Blockchain Explorer">
+<meta property="og:description" content="Official Feelcoin blockchain explorer. Inspect FEEL blocks, transactions, network difficulty, rewards, treasury allocations and live blockchain activity.">
+<meta property="og:url" content="https://explorer.feelcoin.org/">
+<meta property="og:image" content="https://feelcoin.org/assets/feelcoin-coin.webp">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@feelcoin_org">
+<meta name="twitter:title" content="Feelcoin Explorer | FEEL Blockchain Explorer">
+<meta name="twitter:description" content="Official Feelcoin blockchain explorer. Inspect FEEL blocks, transactions, network difficulty, rewards, treasury allocations and live blockchain activity.">
+<meta name="twitter:image" content="https://feelcoin.org/assets/feelcoin-coin.webp">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Feelcoin Explorer",
+  "url": "https://explorer.feelcoin.org/",
+  "description": "Official Feelcoin blockchain explorer. Inspect FEEL blocks, transactions, network difficulty, rewards, treasury allocations and live blockchain activity.",
+  "isPartOf": {
+    "@type": "WebSite",
+    "name": "Feelcoin",
+    "url": "https://feelcoin.org/"
+  },
+  "sameAs": [
+    "https://github.com/feelcoin-org",
+    "https://x.com/feelcoin_org",
+    "https://discord.com/invite/2sx7Q8yAR"
+  ]
+}
+</script>
+
+<!-- FEELCOIN EXPLORER SEO END -->
+
 </head>
 
 <body>
@@ -699,6 +1062,134 @@ Search
 </div>
 
 </section>
+
+<section
+  class="feel-live-network"
+  id="feelExplorerNetworkStatus">
+
+<div class="feel-live-network-card">
+
+<div class="feel-live-head">
+
+<div class="feel-live-title">
+<span
+  class="feel-live-master-dot"
+  id="feelExplorerMasterDot"></span>
+<span>Live Network Infrastructure</span>
+</div>
+
+<div
+  class="feel-live-updated"
+  id="feelExplorerUpdated">
+Checking network...
+</div>
+
+</div>
+
+
+<div class="feel-live-grid">
+
+
+<div class="feel-live-item">
+<div class="label">Network Tip</div>
+<div
+  class="feel-live-value"
+  id="feelExplorerHeight">—</div>
+<div class="feel-live-sub">
+Current mainnet height
+</div>
+</div>
+
+
+<div class="feel-live-item">
+<div class="label">Block Target</div>
+<div
+  class="feel-live-value"
+  id="feelExplorerTarget">120s</div>
+<div class="feel-live-sub">
+Protocol target
+</div>
+</div>
+
+
+<div class="feel-live-item">
+<div class="label">Node 1</div>
+
+<div class="feel-live-value feel-live-node">
+<span
+  class="feel-node-dot"
+  id="feelExplorerNode1Dot"></span>
+
+<span id="feelExplorerNode1Status">
+Checking
+</span>
+</div>
+
+<div
+  class="feel-live-sub"
+  id="feelExplorerNode1Height">
+node1.feelcoin.org
+</div>
+</div>
+
+
+<div class="feel-live-item">
+<div class="label">Node 2</div>
+
+<div class="feel-live-value feel-live-node">
+<span
+  class="feel-node-dot"
+  id="feelExplorerNode2Dot"></span>
+
+<span id="feelExplorerNode2Status">
+Checking
+</span>
+</div>
+
+<div
+  class="feel-live-sub"
+  id="feelExplorerNode2Height">
+node2.feelcoin.org
+</div>
+</div>
+
+
+<div class="feel-live-item">
+<div class="label">Synchronization</div>
+
+<div
+  class="feel-live-value"
+  id="feelExplorerSync">
+Checking
+</div>
+
+<div class="feel-live-sub">
+Network consensus health
+</div>
+</div>
+
+
+<div class="feel-live-item">
+<div class="label">Infrastructure</div>
+
+<div
+  class="feel-live-value"
+  id="feelExplorerInfrastructure">
+Checking
+</div>
+
+<div class="feel-live-sub">
+Published bootstrap nodes
+</div>
+</div>
+
+
+</div>
+
+</div>
+
+</section>
+
 
 
 <section class="card section">
@@ -844,6 +1335,248 @@ function resultBox(label,value){
       <strong>${value ?? "—"}</strong>
     </div>
   `;
+}
+
+
+
+
+function setExplorerNode(prefix,node){
+
+  const dot =
+    $(prefix + "Dot");
+
+  const status =
+    $(prefix + "Status");
+
+  const detail =
+    $(prefix + "Height");
+
+  if(!dot || !status || !detail)
+    return;
+
+  dot.classList.remove(
+    "online",
+    "warning"
+  );
+
+  if(node && node.online){
+
+    dot.classList.add("online");
+
+    status.textContent =
+      node.synchronized === false
+        ? "Syncing"
+        : "Online";
+
+    detail.textContent =
+      node.height !== undefined
+        ? "Height " +
+          Number(node.height).toLocaleString()
+        : (node.host || "Online");
+
+  }
+  else{
+
+    dot.classList.add("warning");
+
+    status.textContent =
+      "Offline";
+
+    detail.textContent =
+      node && node.host
+        ? node.host
+        : "Unavailable";
+
+  }
+
+}
+
+
+async function loadExplorerNetworkStatus(){
+
+  const masterDot =
+    $("feelExplorerMasterDot");
+
+  try{
+
+    const response =
+      await fetch(
+        "/network-status.json",
+        {cache:"no-store"}
+      );
+
+    if(!response.ok)
+      throw new Error(
+        "HTTP " + response.status
+      );
+
+    const data =
+      await response.json();
+
+    const network =
+      data.network || {};
+
+    const nodes =
+      data.nodes || {};
+
+    $("feelExplorerHeight").textContent =
+      network.height !== undefined
+        ? Number(
+            network.height
+          ).toLocaleString()
+        : "—";
+
+    $("feelExplorerTarget").textContent =
+      network.target_seconds !== undefined
+        ? network.target_seconds + "s"
+        : "120s";
+
+
+    setExplorerNode(
+      "feelExplorerNode1",
+      nodes.node1
+    );
+
+    setExplorerNode(
+      "feelExplorerNode2",
+      nodes.node2
+    );
+
+
+    const node1Online =
+      !!(
+        nodes.node1 &&
+        nodes.node1.online
+      );
+
+    const node2Online =
+      !!(
+        nodes.node2 &&
+        nodes.node2.online
+      );
+
+    const bothOnline =
+      node1Online &&
+      node2Online;
+
+
+    const node1Synced =
+      !nodes.node1 ||
+      nodes.node1.synchronized !== false;
+
+    const node2Synced =
+      !nodes.node2 ||
+      nodes.node2.synchronized !== false;
+
+    const networkSynced =
+      network.synchronized !== false &&
+      node1Synced &&
+      node2Synced;
+
+
+    $("feelExplorerSync").textContent =
+      networkSynced
+        ? "Synchronized"
+        : "Syncing";
+
+
+    $("feelExplorerInfrastructure").textContent =
+      bothOnline
+        ? "Operational"
+        : (
+            node1Online ||
+            node2Online
+              ? "Degraded"
+              : "Unavailable"
+          );
+
+
+    masterDot.classList.remove(
+      "online",
+      "warning"
+    );
+
+    masterDot.classList.add(
+      bothOnline && networkSynced
+        ? "online"
+        : "warning"
+    );
+
+
+    if(data.updated_at){
+
+      const updated =
+        new Date(
+          data.updated_at
+        );
+
+      const ageMs =
+        Date.now() -
+        updated.getTime();
+
+      if(ageMs > 120000){
+
+        $("feelExplorerUpdated")
+          .textContent =
+          "Status delayed • " +
+          updated.toLocaleTimeString();
+
+        masterDot.classList.remove(
+          "online"
+        );
+
+        masterDot.classList.add(
+          "warning"
+        );
+
+      }
+      else{
+
+        $("feelExplorerUpdated")
+          .textContent =
+          "Updated " +
+          updated.toLocaleTimeString();
+
+      }
+
+    }
+    else{
+
+      $("feelExplorerUpdated")
+        .textContent =
+        "Live network status";
+
+    }
+
+  }
+  catch(error){
+
+    masterDot.classList.remove(
+      "online"
+    );
+
+    masterDot.classList.add(
+      "warning"
+    );
+
+    $("feelExplorerSync").textContent =
+      "Unavailable";
+
+    $("feelExplorerInfrastructure")
+      .textContent =
+      "Unavailable";
+
+    $("feelExplorerUpdated")
+      .textContent =
+      "Network status unavailable";
+
+    console.warn(
+      "Feelcoin network status:",
+      error
+    );
+
+  }
+
 }
 
 
@@ -1146,6 +1879,15 @@ loadHome();
 
 setInterval(
   loadHome,
+  30000
+);
+
+
+
+loadExplorerNetworkStatus();
+
+setInterval(
+  loadExplorerNetworkStatus,
   30000
 );
 
