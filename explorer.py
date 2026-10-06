@@ -1825,6 +1825,26 @@ async function searchValue(value){
 }
 
 
+async function loadSearchFromUrl(){
+
+  const params =
+    new URLSearchParams(
+      window.location.search
+    );
+
+  const query =
+    params.get("q");
+
+  if(!query)
+    return;
+
+  await searchValue(
+    query.trim()
+  );
+
+}
+
+
 function renderBlock(data){
 
   const result = data.data.result || {};
@@ -1996,6 +2016,7 @@ $("searchBox")
 
 
 loadHome();
+loadSearchFromUrl();
 
 setInterval(
   loadHome,
