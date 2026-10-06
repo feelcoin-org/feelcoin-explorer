@@ -2034,6 +2034,33 @@ setInterval(
 
 </script>
 
+
+<script>
+/* FEELCOIN BRAND HOME LINK */
+document.addEventListener("DOMContentLoaded", function () {
+    const brand = document.querySelector(".brand");
+
+    if (!brand) return;
+
+    brand.style.cursor = "pointer";
+    brand.setAttribute("title", "Return to Home");
+    brand.setAttribute("role", "link");
+    brand.setAttribute("tabindex", "0");
+
+    brand.addEventListener("click", function (event) {
+        if (event.target.closest("a")) return;
+        window.location.href = "https://explorer.feelcoin.org";
+    });
+
+    brand.addEventListener("keydown", function (event) {
+        if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            window.location.href = "https://explorer.feelcoin.org";
+        }
+    });
+});
+</script>
+
 </body>
 </html>
 """
