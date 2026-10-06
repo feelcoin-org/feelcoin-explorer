@@ -48,6 +48,101 @@ def get_info():
     return http_get("/get_info")
 
 
+# =========================================================
+# FEELCOIN EMITTED SUPPLY
+# =========================================================
+
+ATOMIC_UNITS = 10 ** 12
+SUPPLY_RPC_CHUNK = 1000
+
+_supply_cache = {
+    "height": 0,
+    "emission_atomic": 0
+}
+
+
+def get_coinbase_tx_sum(height, count):
+    return rpc(
+        "get_coinbase_tx_sum",
+        {
+            "height": int(height),
+            "count": int(count)
+        }
+    )
+
+
+def get_emitted_supply(chain_height=None):
+    """
+    Return total protocol-issued FEEL through the current chain height.
+
+    Uses emission_amount only.
+    Transaction fees are excluded because they are not new supply.
+    """
+
+    if chain_height is None:
+        chain_height = int(
+            get_info().get("height", 0)
+        )
+
+    chain_height = int(chain_height)
+
+    cached_height = int(
+        _supply_cache.get("height", 0)
+    )
+
+    cached_emission = int(
+        _supply_cache.get("emission_atomic", 0)
+    )
+
+    if cached_height > chain_height:
+        cached_height = 0
+        cached_emission = 0
+
+    start = cached_height
+    total = cached_emission
+
+    while start < chain_height:
+
+        count = min(
+            SUPPLY_RPC_CHUNK,
+            chain_height - start
+        )
+
+        result = get_coinbase_tx_sum(
+            start,
+            count
+        ).get("result", {})
+
+        status = result.get("status", "")
+
+        if status != "OK":
+            raise RuntimeError(
+                "get_coinbase_tx_sum failed "
+                f"at height {start}: {status}"
+            )
+
+        total += int(
+            result.get(
+                "emission_amount",
+                0
+            )
+        )
+
+        start += count
+
+    _supply_cache["height"] = chain_height
+    _supply_cache["emission_atomic"] = total
+
+    return {
+        "height": chain_height,
+        "emitted_atomic": total,
+        "emitted_supply":
+            f"{total / ATOMIC_UNITS:.12f}",
+        "ticker": "FEEL",
+        "decimals": 12
+    }
+
+
 def get_block(height=None, block_hash=None):
     params = {}
 
@@ -362,7 +457,7 @@ nav a:hover{
 
 .grid{
   display:grid;
-  grid-template-columns:repeat(4,1fr);
+  grid-template-columns:repeat(3,1fr);
   gap:14px;
   margin-top:18px;
 }
@@ -1061,6 +1156,12 @@ Search
 <div class="sub">Feelcoin network</div>
 </div>
 
+<div class="card metric">
+<div class="label">Emitted Supply</div>
+<div class="big" id="emittedSupply">—</div>
+<div class="sub">Total FEEL created by protocol</div>
+</div>
+
 </section>
 
 <section
@@ -1631,6 +1732,25 @@ async function loadHome(){
     $("network").textContent =
       info.nettype || "mainnet";
 
+    if(data.supply && data.supply.emitted_supply){
+
+      $("emittedSupply").textContent =
+        Number(
+          data.supply.emitted_supply
+        ).toLocaleString(
+          undefined,
+          {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 6
+          }
+        ) + " FEEL";
+
+    }else{
+
+      $("emittedSupply").textContent = "—";
+
+    }
+
     $("blocks").innerHTML = "";
 
     for(const b of data.blocks){
@@ -1949,12 +2069,31 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send_html()
 
 
+            if parsed.path == "/api/supply":
+
+                info = get_info()
+
+                height = int(
+                    info.get("height", 0)
+                )
+
+                return self.send_json(
+                    get_emitted_supply(
+                        height
+                    )
+                )
+
+
             if parsed.path == "/api/home":
 
                 info = get_info()
 
                 height = int(
                     info.get("height", 0)
+                )
+
+                supply = get_emitted_supply(
+                    height
                 )
 
                 blocks = []
@@ -1992,6 +2131,7 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send_json(
                     {
                         "info": info,
+                        "supply": supply,
                         "blocks": blocks,
                         "server_time": int(time.time())
                     }
