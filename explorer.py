@@ -7,7 +7,7 @@ import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse, parse_qs
 
-RPC = "http://127.0.0.1:35781"
+RPC = "http://127.0.0.1:35790"
 HOST = "127.0.0.1"
 PORT = 8081
 
@@ -350,8 +350,8 @@ header{
 }
 
 .logo{
-  width:60px;
-  height:60px;
+  width:48px;
+  height:48px;
   border-radius:50%;
   object-fit:cover;
   border:2px solid rgba(255,255,255,.22);
@@ -598,8 +598,8 @@ footer{
   }
 
   .logo{
-    width:48px;
-    height:48px;
+    width:40px;
+    height:40px;
   }
 
   .grid,
@@ -1059,7 +1059,7 @@ content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-
 
 <div class="brand">
 <img
-  src="https://i.imgur.com/VPorAY4.jpeg"
+  src="/assets/feelcoin-logo-optimized.png"
   class="logo"
   alt="Feelcoin">
 
