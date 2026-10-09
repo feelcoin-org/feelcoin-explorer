@@ -1,0 +1,16 @@
+[Unit]
+Description=Feelcoin Backup RPC SSH Tunnel
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=feeladmin
+ExecStart=/usr/bin/ssh -i /home/feeladmin/.ssh/feelcoin-rpc-service -o IdentitiesOnly=yes -o BatchMode=yes -o ExitOnForwardFailure=yes -o ServerAliveInterval=15 -o ServerAliveCountMax=3 -o StrictHostKeyChecking=yes -N -L 127.0.0.1:35795:127.0.0.1:35781 feeladmin@BACKUP_NODE_HOSTNAME
+Restart=always
+RestartSec=5
+TimeoutStopSec=10
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

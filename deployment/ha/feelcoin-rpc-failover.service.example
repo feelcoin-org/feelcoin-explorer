@@ -1,0 +1,19 @@
+[Unit]
+Description=Feelcoin Explorer RPC Failover Proxy
+Wants=network-online.target
+After=network-online.target feelcoin-node2-tunnel.service
+
+[Service]
+Type=simple
+User=feeladmin
+ExecStart=/usr/bin/python3 /opt/feelcoin-rpc-failover/proxy.py
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+ProtectSystem=strict
+StateDirectory=feelcoin-rpc-failover
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

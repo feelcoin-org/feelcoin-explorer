@@ -1,0 +1,14 @@
+[Unit]
+Description=Feelcoin Block Explorer
+After=feelcoin-rpc-failover.service
+Wants=feelcoin-rpc-failover.service
+
+[Service]
+User=feeladmin
+WorkingDirectory=/home/feeladmin/feelcoin-web-explorer
+ExecStart=/usr/bin/python3 /home/feeladmin/feelcoin-web-explorer/explorer.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
