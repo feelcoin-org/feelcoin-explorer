@@ -1143,6 +1143,7 @@ content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-
 <a href="/">Explorer</a>
 <a href="https://feelcoin.org" target="_blank" rel="noopener noreferrer">Website</a>
 <a href="https://pool.feelcoin.org" target="_blank" rel="noopener noreferrer">Mining Pool</a>
+<a href="https://api.feelcoin.org/docs" target="_blank" rel="noopener noreferrer" aria-label="Feelcoin Public API Documentation">API Docs</a>
 <a href="https://github.com/feelcoin-org" target="_blank" rel="noopener noreferrer">GitHub</a>
 
 
@@ -1158,6 +1159,7 @@ content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-
     <a href="/">Explorer</a>
 <a href="https://feelcoin.org" target="_blank" rel="noopener noreferrer">Website</a>
 <a href="https://pool.feelcoin.org" target="_blank" rel="noopener noreferrer">Mining Pool</a>
+<a href="https://api.feelcoin.org/docs" target="_blank" rel="noopener noreferrer" aria-label="Feelcoin Public API Documentation">API Docs</a>
 <a href="https://github.com/feelcoin-org" target="_blank" rel="noopener noreferrer">GitHub</a>
 <a href="https://discord.com/invite/2sx7Q8yAR" target="_blank" rel="noopener noreferrer">Discord</a>
 <a href="https://x.com/feelcoin_org" target="_blank" rel="noopener noreferrer">X</a>
