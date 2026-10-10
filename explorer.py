@@ -1051,6 +1051,23 @@ content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-
 
 
 <style>
+
+/* FEELCOIN SOCIAL RIGHT V4 */
+@media(min-width:901px){
+ header>.feel-social-right{
+  display:flex;align-items:center;gap:8px;margin-left:auto;
+ }
+}
+.feel-social-right a{
+ display:inline-flex;align-items:center;justify-content:center;
+ min-width:35px;height:35px;padding:0 9px;
+ color:#e9bf65;text-decoration:none;
+ border:1px solid rgba(218,174,82,.35);border-radius:10px;
+}
+.feel-social-right svg{width:17px;height:17px}
+.feel-social-right a:hover{background:rgba(255,255,255,.1)}
+@media(max-width:900px){.feel-social-right{display:none!important}}
+
 /* FEELCOIN MOBILE NAV V1 */
 .feel-mobile-menu { display:none; }
 
@@ -1122,16 +1139,16 @@ content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-
 </div>
 </div>
 
-<nav>
+<nav class="feel-primary-nav">
 <a href="/">Explorer</a>
 <a href="https://feelcoin.org" target="_blank" rel="noopener noreferrer">Website</a>
 <a href="https://pool.feelcoin.org" target="_blank" rel="noopener noreferrer">Mining Pool</a>
 <a href="https://github.com/feelcoin-org" target="_blank" rel="noopener noreferrer">GitHub</a>
-<a href="https://discord.com/invite/2sx7Q8yAR" target="_blank" rel="noopener noreferrer">Discord</a>
-<a href="https://x.com/feelcoin_org" target="_blank" rel="noopener noreferrer">X</a>
+
+
 <a href="https://wallet.feelcoin.org" target="_blank" rel="noopener noreferrer">Web Wallet</a>
 <a href="https://paper.feelcoin.org" target="_blank" rel="noopener noreferrer">Paper Wallet</a>
-</nav>
+</nav><div class="feel-social-right"><a href="https://discord.com/invite/2sx7Q8yAR" target="_blank" rel="noopener noreferrer" aria-label="Discord">Discord</a><a href="https://x.com/feelcoin_org" target="_blank" rel="noopener noreferrer">X</a><a href="https://t.me/feelcoin_community" target="_blank" rel="noopener noreferrer" aria-label="Telegram"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.4 4.6 18.2 19.7l-6.7-4.7-2.4 2.3.4-5.1 9.4-8.5c.4-.4-.1-.6-.6-.3L5.6 13.2.7 11.7c-1.1-.4-1.1-1.1.2-1.6L20 2.7c.9-.3 1.7.2 1.4 1.9z"/></svg></a></div>
 
 <details class="feel-mobile-menu">
   <summary aria-label="Toggle navigation">
@@ -1146,7 +1163,8 @@ content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-
 <a href="https://x.com/feelcoin_org" target="_blank" rel="noopener noreferrer">X</a>
 <a href="https://wallet.feelcoin.org" target="_blank" rel="noopener noreferrer">Web Wallet</a>
 <a href="https://paper.feelcoin.org" target="_blank" rel="noopener noreferrer">Paper Wallet</a>
-  </div>
+  <a href="https://t.me/feelcoin_community" target="_blank" rel="noopener noreferrer">Telegram</a>
+</div>
 </details>
 
 
