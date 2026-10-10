@@ -1049,6 +1049,59 @@ content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-
 
 <!-- FEELCOIN EXPLORER SEO END -->
 
+
+<style>
+/* FEELCOIN MOBILE NAV V1 */
+.feel-mobile-menu { display:none; }
+
+@media(max-width:900px) {
+  header { flex-wrap:wrap; }
+  header > nav { display:none!important; }
+
+  .feel-mobile-menu {
+    display:block;
+    order:3;
+    width:100%;
+  }
+
+  .feel-mobile-menu summary {
+    cursor:pointer;
+    list-style:none;
+    padding:12px 16px;
+    border:1px solid rgba(218,174,82,.35);
+    border-radius:12px;
+    background:#111a2b;
+    color:#e9bf65;
+    font-weight:700;
+  }
+
+  .feel-mobile-menu summary::-webkit-details-marker {
+    display:none;
+  }
+
+  .feel-mobile-links {
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:8px;
+    margin-top:10px;
+  }
+
+  .feel-mobile-links a {
+    padding:12px;
+    border:1px solid rgba(255,255,255,.09);
+    border-radius:10px;
+    background:#111a2b;
+    color:#eef4ff;
+    text-align:center;
+    overflow-wrap:anywhere;
+  }
+}
+
+@media(max-width:420px) {
+  .feel-mobile-links { grid-template-columns:1fr; }
+}
+</style>
+
 </head>
 
 <body>
@@ -1073,7 +1126,29 @@ content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-
 <a href="/">Explorer</a>
 <a href="https://feelcoin.org" target="_blank" rel="noopener noreferrer">Website</a>
 <a href="https://pool.feelcoin.org" target="_blank" rel="noopener noreferrer">Mining Pool</a>
+<a href="https://github.com/feelcoin-org" target="_blank" rel="noopener noreferrer">GitHub</a>
+<a href="https://discord.com/invite/2sx7Q8yAR" target="_blank" rel="noopener noreferrer">Discord</a>
+<a href="https://x.com/feelcoin_org" target="_blank" rel="noopener noreferrer">X</a>
+<a href="https://wallet.feelcoin.org" target="_blank" rel="noopener noreferrer">Web Wallet</a>
+<a href="https://paper.feelcoin.org" target="_blank" rel="noopener noreferrer">Paper Wallet</a>
 </nav>
+
+<details class="feel-mobile-menu">
+  <summary aria-label="Toggle navigation">
+    &#9776; <span>Menu</span>
+  </summary>
+  <div class="feel-mobile-links">
+    <a href="/">Explorer</a>
+<a href="https://feelcoin.org" target="_blank" rel="noopener noreferrer">Website</a>
+<a href="https://pool.feelcoin.org" target="_blank" rel="noopener noreferrer">Mining Pool</a>
+<a href="https://github.com/feelcoin-org" target="_blank" rel="noopener noreferrer">GitHub</a>
+<a href="https://discord.com/invite/2sx7Q8yAR" target="_blank" rel="noopener noreferrer">Discord</a>
+<a href="https://x.com/feelcoin_org" target="_blank" rel="noopener noreferrer">X</a>
+<a href="https://wallet.feelcoin.org" target="_blank" rel="noopener noreferrer">Web Wallet</a>
+<a href="https://paper.feelcoin.org" target="_blank" rel="noopener noreferrer">Paper Wallet</a>
+  </div>
+</details>
+
 
 <div class="online">
 <span class="dot" id="statusDot"></span>
