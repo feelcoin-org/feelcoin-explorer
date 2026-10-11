@@ -1097,18 +1097,18 @@ footer{
 
 /* Scoped analytics, preserving the existing explorer layout. */
 .fe-chart-actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
-.fe-chart-actions button{color:#d5ddeb;background:#101b2e;border:1px solid #36435b;border-radius:10px;padding:8px 11px;font-size:13px;font-weight:700;cursor:pointer}
+.fe-chart-actions button{color:#d5ddeb;background:#101b2e;border:1px solid #36435b;border-radius:10px;padding:7px 10px;font-size:12px;font-weight:500;cursor:pointer}
 .fe-chart-actions button[aria-pressed=true]{color:#ffd88c;border-color:#c39a49;background:#34291b}
 .fe-chart-actions button:focus-visible{outline:2px solid #e9bb63;outline-offset:2px}
-.fe-chart{padding:10px;border:1px solid var(--line);border-radius:14px;background:#091321}
-.fe-chart svg{width:100%;height:auto;display:block}
-.fe-chart-note{color:var(--muted);font-size:12px;line-height:1.7;margin-top:12px}
+.fe-chart{padding:6px;border:1px solid var(--line);border-radius:14px;background:#091321}
+.fe-chart svg{display:block;width:100%;height:238px}.fe-chart svg text{font-weight:400}
+.fe-chart-note{color:var(--muted);font-size:11px;line-height:1.55;margin-top:8px}
 .fe-economic-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
 .fe-economic-stat{background:#0c1727;border:1px solid var(--line);border-radius:12px;padding:15px;min-width:0}
 .fe-economic-stat strong{display:block;font-size:19px;color:#f1cb81;margin:10px 0;overflow-wrap:anywhere}
 .fe-proof{padding:15px;border-radius:12px;border:1px solid var(--line);margin-top:15px;font-size:13px;line-height:1.7}
 @media(max-width:950px){.fe-economic-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:600px){.fe-economic-grid{grid-template-columns:1fr}.fe-chart{padding:4px}.fe-economic-stat strong{font-size:18px}}
+@media(max-width:600px){.fe-economic-grid{grid-template-columns:1fr}.fe-chart{padding:4px}.fe-chart svg{height:215px}.fe-economic-stat strong{font-size:18px}}
 </style>
 
 <!-- FEELCOIN EXPLORER SEO START -->
@@ -1959,8 +1959,29 @@ async function loadFeChart(period){
     $("feChartNote").textContent="Historical data unavailable. Live network metrics remain active.";
   }
 }
+function feDifficultyScale(value){
+  const magnitude=Math.abs(Number(value));
+  if(!Number.isFinite(magnitude))return "—";
+  if(magnitude>=1e12)return fePretty(value/1e12,2)+"T";
+  if(magnitude>=1e9)return fePretty(value/1e9,2)+"G";
+  if(magnitude>=1e6)return fePretty(value/1e6,2)+"M";
+  if(magnitude>=1e3)return fePretty(value/1e3,2)+"K";
+  return fePretty(value,1);
+}
+function feChartTick(value){
+  if(feMetric==="difficulty")return feDifficultyScale(value);
+  if(feMetric==="hashrate")return hashRate(value);
+  return fePretty(value,1)+" s";
+}
+function feChartTooltip(value){
+  if(feMetric==="difficulty")return fePretty(value,0)+" difficulty (unitless)";
+  if(feMetric==="hashrate")return hashRate(value);
+  return fePretty(value,2)+" seconds per block";
+}
 function renderFeChart(){
   const svg=$("feHistoricalChart");svg.replaceChildren();
+  const width=Math.max(300,Math.round(svg.getBoundingClientRect().width||760));
+  svg.setAttribute("viewBox","0 0 "+width+" 220");
   const values=((feHistory&&feHistory.samples)||[]).map(function(p){
     return {h:Number(p.height),v:p[feMetric]===null?NaN:Number(p[feMetric]),ts:Number(p.timestamp)};
   }).filter(function(p){return Number.isFinite(p.h)&&Number.isFinite(p.v);});
@@ -1969,27 +1990,29 @@ function renderFeChart(){
   const lowV=Math.min(...values.map(p=>p.v)),highV=Math.max(...values.map(p=>p.v));
   const margin=highV===lowV?Math.max(1,highV*.1):(highV-lowV)*.08;
   const low=Math.max(0,lowV-margin),high=highV+margin;
-  const px=v=>64+(v-lowH)/Math.max(1,highH-lowH)*678;
-  const py=v=>175-(v-low)/Math.max(.00001,high-low)*154;
+  const left=width<440?98:108,right=width-18,top=23,bottom=175;
+  const px=v=>left+(v-lowH)/Math.max(1,highH-lowH)*Math.max(1,right-left);
+  const py=v=>bottom-(v-low)/Math.max(.00001,high-low)*(bottom-top);
   for(let i=0;i<5;i++){
     const val=low+(high-low)*i/4,yy=py(val);
-    svg.appendChild(feNode("line",{x1:64,x2:742,y1:yy,y2:yy,stroke:"#354059","stroke-width":1}));
-    svg.appendChild(feNode("text",{x:57,y:yy+4,fill:"#bac7dc","text-anchor":"end","font-size":12},fePretty(val,1)));
+    svg.appendChild(feNode("line",{x1:left,x2:right,y1:yy,y2:yy,stroke:"#354059","stroke-width":1}));
+    svg.appendChild(feNode("text",{x:left-9,y:yy+4,fill:"#bac7dc","text-anchor":"end","font-size":11,"font-weight":"400"},feChartTick(val)));
   }
-  svg.appendChild(feNode("polyline",{points:values.map(p=>px(p.h).toFixed(1)+","+py(p.v).toFixed(1)).join(" "),fill:"none",stroke:"#e2b65e","stroke-width":3,"stroke-linecap":"round","stroke-linejoin":"round"}));
+  svg.appendChild(feNode("polyline",{points:values.map(p=>px(p.h).toFixed(1)+","+py(p.v).toFixed(1)).join(" "),fill:"none",stroke:"#e2b65e","stroke-width":2.4,"stroke-linecap":"round","stroke-linejoin":"round"}));
   values.forEach(function(p){
-    const circle=feNode("circle",{cx:px(p.h),cy:py(p.v),r:3,fill:"#f5d58c"});
-    circle.appendChild(feNode("title",{},"Block "+p.h+" — "+fePretty(p.v,2)+" — "+new Date(p.ts*1000).toUTCString()));
+    const circle=feNode("circle",{cx:px(p.h),cy:py(p.v),r:2.6,fill:"#f5d58c"});
+    circle.appendChild(feNode("title",{},"Block "+p.h+" — "+feChartTooltip(p.v)+" — "+new Date(p.ts*1000).toUTCString()));
     svg.appendChild(circle);
   });
-  svg.appendChild(feNode("text",{x:64,y:202,fill:"#bac7dc","font-size":12},"Block "+fePretty(lowH,0)));
-  svg.appendChild(feNode("text",{x:742,y:202,fill:"#bac7dc","font-size":12,"text-anchor":"end"},"Block "+fePretty(highH,0)));
+  svg.appendChild(feNode("text",{x:left,y:207,fill:"#bac7dc","font-size":11,"font-weight":"400"},"Block "+fePretty(lowH,0)));
+  svg.appendChild(feNode("text",{x:right,y:207,fill:"#bac7dc","font-size":11,"font-weight":"400","text-anchor":"end"},"Block "+fePretty(highH,0)));
   const target=feHistory.target_seconds||120;
   $("feChartNote").textContent="Historical "+(feMetric==="avg_block_seconds"?"mean seconds per block":feMetric)+
     " • "+values.length+" sampled headers • ~"+fePeriod+" calculated from "+target+
     "s target block intervals (not exact wall-clock bounds)."+
     (feHistory.partial?" Some samples were unavailable.":"");
 }
+window.addEventListener("resize",function(){if(feHistory)renderFeChart();});
 async function loadFeEconomics(){
   try{
     const response=await fetch("/api/analytics/economics",{cache:"no-store"});
