@@ -1096,7 +1096,13 @@ footer{
 
 
 /* Scoped analytics, preserving the existing explorer layout. */
-.fe-chart-actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.fe-chart-actions{display:flex;flex-wrap:nowrap;align-items:center;justify-content:center;gap:12px;margin:12px 0 10px;max-width:100%;overflow-x:auto;padding:1px 0 4px}
+.fe-chart-subgroup{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+.fe-insights{display:flex;align-items:stretch;justify-content:center;flex-wrap:wrap;gap:8px;margin:0 0 13px}
+.fe-insight{flex:0 1 174px;min-width:112px;padding:6px 10px;background:#172234;border:1px solid #344156;border-radius:10px}
+.fe-insight-label{font-size:10px;font-weight:400;color:#98aac0}
+.fe-insight-value{font-size:14px;font-weight:500;color:#eac27b;white-space:nowrap;margin-top:3px}
+@media(max-width:700px){.fe-chart-actions{justify-content:flex-start}.fe-insight{flex:1 1 100px;padding:6px 8px}.fe-insight-value{font-size:12px}}
 .fe-chart-actions button{color:#d5ddeb;background:#101b2e;border:1px solid #36435b;border-radius:10px;padding:7px 10px;font-size:12px;font-weight:500;cursor:pointer}
 .fe-chart-actions button[aria-pressed=true]{color:#ffd88c;border-color:#c39a49;background:#34291b}
 .fe-chart-actions button:focus-visible{outline:2px solid #e9bb63;outline-offset:2px}
@@ -1503,15 +1509,22 @@ Published bootstrap nodes
 
 <section class="card section" id="feNetworkAnalytics">
   <div class="section-head"><div><h3>Network Analytics</h3><div class="sub">Sampled on-chain history</div></div></div>
-  <div class="fe-chart-actions" role="group" aria-label="Chart time window">
-    <button data-fe-window="24h" aria-pressed="true" onclick="loadFeChart('24h')">~24h</button>
-    <button data-fe-window="7d" aria-pressed="false" onclick="loadFeChart('7d')">~7d</button>
-    <button data-fe-window="30d" aria-pressed="false" onclick="loadFeChart('30d')">~30d</button>
+  <div class="fe-chart-actions" role="toolbar" aria-label="Network analytics controls">
+    <div class="fe-chart-subgroup" role="group" aria-label="Chart time window">
+      <button data-fe-window="24h" aria-pressed="true" onclick="loadFeChart('24h')">~24h</button>
+      <button data-fe-window="7d" aria-pressed="false" onclick="loadFeChart('7d')">~7d</button>
+      <button data-fe-window="30d" aria-pressed="false" onclick="loadFeChart('30d')">~30d</button>
+    </div>
+    <div class="fe-chart-subgroup" role="group" aria-label="Chart metric">
+      <button data-fe-metric="hashrate" aria-pressed="true" onclick="setFeMetric('hashrate')">Hashrate</button>
+      <button data-fe-metric="difficulty" aria-pressed="false" onclick="setFeMetric('difficulty')">Difficulty</button>
+      <button data-fe-metric="avg_block_seconds" aria-pressed="false" onclick="setFeMetric('avg_block_seconds')">Average block time</button>
+    </div>
   </div>
-  <div class="fe-chart-actions" role="group" aria-label="Chart metric">
-    <button data-fe-metric="hashrate" aria-pressed="true" onclick="setFeMetric('hashrate')">Hashrate</button>
-    <button data-fe-metric="difficulty" aria-pressed="false" onclick="setFeMetric('difficulty')">Difficulty</button>
-    <button data-fe-metric="avg_block_seconds" aria-pressed="false" onclick="setFeMetric('avg_block_seconds')">Average block time</button>
+  <div class="fe-insights" role="status" aria-live="polite" aria-label="Selected network metric summary">
+    <div class="fe-insight"><div class="fe-insight-label">Latest sample</div><div class="fe-insight-value" id="feInsightLatest">—</div></div>
+    <div class="fe-insight"><div class="fe-insight-label">Sampled range</div><div class="fe-insight-value" id="feInsightRange">—</div></div>
+    <div class="fe-insight"><div class="fe-insight-label">Period change</div><div class="fe-insight-value" id="feInsightChange">—</div></div>
   </div>
   <div class="fe-chart"><svg id="feHistoricalChart" viewBox="0 0 760 210" role="img" aria-label="Historical Feelcoin network chart"></svg></div>
   <p id="feChartNote" class="fe-chart-note" aria-live="polite">Loading historical samples...</p>
@@ -1945,6 +1958,7 @@ function setFeMetric(metric){
 async function loadFeChart(period){
   if(!["24h","7d","30d"].includes(period))return;
   fePeriod=period;fePressed("data-fe-window",period);
+  feHistory=null;renderFeInsights();
   $("feChartNote").textContent="Loading historical samples...";
   const request=++feRequestNumber;
   try{
@@ -1955,7 +1969,7 @@ async function loadFeChart(period){
     feHistory=data;renderFeChart();
   }catch(error){
     if(request!==feRequestNumber)return;
-    feHistory=null;$("feHistoricalChart").replaceChildren();
+    feHistory=null;$("feHistoricalChart").replaceChildren();renderFeInsights();
     $("feChartNote").textContent="Historical data unavailable. Live network metrics remain active.";
   }
 }
@@ -1978,7 +1992,40 @@ function feChartTooltip(value){
   if(feMetric==="hashrate")return hashRate(value);
   return fePretty(value,2)+" seconds per block";
 }
+/* Client-side summaries of the same 25 RPC-backed samples; no extra endpoints. */
+function feInsightScale(maxValue,metric){
+  const value=Math.abs(maxValue);
+  if(metric==="avg_block_seconds")return {divisor:1,unit:"s"};
+  const base=value>=1e12?1e12:value>=1e9?1e9:value>=1e6?1e6:value>=1e3?1e3:1;
+  const suffix=base===1e12?"T":base===1e9?"G":base===1e6?"M":base===1e3?"K":"";
+  return {divisor:base,unit:metric==="hashrate"?suffix+"H/s":suffix};
+}
+function renderFeInsights(){
+  const latest=$("feInsightLatest"),range=$("feInsightRange"),change=$("feInsightChange");
+  latest.textContent=range.textContent=change.textContent="—";
+  const samples=((feHistory&&feHistory.samples)||[]).map(function(s){
+    return {height:Number(s.height),value:s[feMetric]==null?NaN:Number(s[feMetric])};
+  }).filter(function(s){return Number.isFinite(s.height)&&Number.isFinite(s.value);})
+    .sort(function(a,b){return a.height-b.height;});
+  if(!samples.length)return;
+  const first=samples[0].value,last=samples[samples.length-1].value;
+  const min=Math.min(...samples.map(s=>s.value)),max=Math.max(...samples.map(s=>s.value));
+  const fmt=feMetric==="difficulty"?feDifficultyScale:feMetric==="hashrate"?hashRate:
+    function(v){return fePretty(v,1)+" s";};
+  latest.textContent=fmt(last);
+  const scale=feInsightScale(max,feMetric);
+  const decimals=scale.divisor===1 && feMetric==="difficulty"?0:2;
+  range.textContent=fePretty(min/scale.divisor,decimals)+"–"+
+    fePretty(max/scale.divisor,decimals)+(scale.unit?" "+scale.unit:"");
+  if(first!==0){
+    const percent=(last-first)/Math.abs(first)*100;
+    if(Number.isFinite(percent)){
+      change.textContent=(percent>0?"+":"")+fePretty(percent,1)+"%";
+    }
+  }
+}
 function renderFeChart(){
+  renderFeInsights();
   const svg=$("feHistoricalChart");svg.replaceChildren();
   const width=Math.max(300,Math.round(svg.getBoundingClientRect().width||760));
   svg.setAttribute("viewBox","0 0 "+width+" 220");

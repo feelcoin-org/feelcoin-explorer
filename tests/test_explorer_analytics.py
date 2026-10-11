@@ -74,6 +74,33 @@ class ExplorerAnalyticsTests(unittest.TestCase):
         self.assertIsNone(result["latest_verified_split"])
         get_block.assert_not_called()
 
+class ExplorerInsightsMarkupTests(unittest.TestCase):
+    def test_six_buttons_share_one_centered_controls_row(self):
+        html = explorer.HTML
+        start = html.index('<div class="fe-chart-actions" role="toolbar"')
+        end = html.index('<div class="fe-insights"', start)
+        row = html[start:end]
+        self.assertEqual(row.count('class="fe-chart-subgroup"'), 2)
+        self.assertEqual(row.count("<button "), 6)
+        for label in ("~24h", "~7d", "~30d", "Hashrate", "Difficulty", "Average block time"):
+            self.assertIn(">" + label + "</button>", row)
+        self.assertIn("justify-content:center", html)
+        self.assertIn("flex-wrap:nowrap", html)
+        self.assertIn("font-size:12px;font-weight:500", html)
+        self.assertIn('id="feHistoricalChart"', html)
+
+    def test_insights_are_client_side_and_null_safe(self):
+        html = explorer.HTML
+        for identifier in ("feInsightLatest", "feInsightRange", "feInsightChange"):
+            self.assertIn('id="' + identifier + '"', html)
+        start = html.index("function renderFeInsights(){")
+        end = html.index("function renderFeChart(){", start)
+        summary_js = html[start:end]
+        self.assertNotIn("fetch(", summary_js)
+        self.assertIn("s[feMetric]==null?NaN", summary_js)
+        self.assertIn("if(first!==0)", summary_js)
+        self.assertIn(".sort(", summary_js)
+
 
 if __name__ == "__main__":
     unittest.main()
