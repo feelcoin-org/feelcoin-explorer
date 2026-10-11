@@ -1111,6 +1111,9 @@ footer{
 .fe-chart-actions button{color:#d5ddeb;background:#101b2e;border:1px solid #36435b;border-radius:10px;padding:7px 10px;font-size:12px;font-weight:500;cursor:pointer}
 .fe-chart-actions button[aria-pressed=true]{color:#ffd88c;border-color:#c39a49;background:#34291b}
 .fe-chart-actions button:focus-visible{outline:2px solid #e9bb63;outline-offset:2px}
+/* Extra breathing room between analytics buttons; typography remains unchanged. */
+#feNetworkAnalytics .fe-chart-subgroup{column-gap:20px}
+#feNetworkAnalytics .fe-chart-actions{column-gap:24px}
 .fe-chart{padding:6px;border:1px solid var(--line);border-radius:14px;background:#091321}
 .fe-chart svg{display:block;width:100%;height:238px}.fe-chart svg text{font-weight:400}
 .fe-chart-note{color:var(--muted);font-size:11px;line-height:1.55;margin-top:8px}
