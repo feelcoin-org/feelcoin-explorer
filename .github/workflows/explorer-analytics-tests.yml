@@ -1,0 +1,47 @@
+name: Explorer Analytics Checks
+
+on:
+  push:
+    branches:
+      - feat/explorer-analytics-transparency-20261011
+  pull_request:
+    paths:
+      - explorer.py
+      - tests/**
+      - .github/workflows/explorer-analytics-tests.yml
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Compile Python
+        run: python3 -m py_compile explorer.py
+      - name: Mocked backend tests
+        run: python3 -m unittest discover -s tests -p 'test_*.py' -v
+      - name: Check inline JavaScript syntax
+        run: |
+          python3 - <<'PY'
+          import explorer
+          import re
+          import subprocess
+          import tempfile
+          from pathlib import Path
+          scripts = re.findall(r'<script([^>]*)>(.*?)</script>', explorer.HTML, flags=re.S)
+          checked = 0
+          with tempfile.TemporaryDirectory() as temp:
+              for index, (attributes, source) in enumerate(scripts):
+                  if 'application/ld+json' in attributes:
+                      continue
+                  path = Path(temp) / f"inline-{index}.js"
+                  path.write_text(source)
+                  subprocess.run(["node", "--check", str(path)], check=True)
+                  checked += 1
+          assert checked >= 3, f"Expected at least 3 inline scripts, got {checked}"
+          print(f"Validated {checked} executable inline JavaScript scripts")
+          PY
