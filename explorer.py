@@ -264,6 +264,103 @@ def enrich_block_reward(result):
     return result
 
 
+
+# Read-only analytics. Expensive historical queries cached server-side.
+import threading
+from decimal import Decimal
+
+ANALYTICS_WINDOWS = {"24h":86400, "7d":604800, "30d":2592000}
+_ANALYTICS_CACHE = {}
+_ANALYTICS_LOCK = threading.Lock()
+
+def analytics_cache(key, fn):
+    with _ANALYTICS_LOCK:
+        cached = _ANALYTICS_CACHE.get(key)
+        if cached and time.monotonic() - cached[0] < 300:
+            return cached[1]
+        value = fn()
+        _ANALYTICS_CACHE[key] = (time.monotonic(), value)
+        return value
+
+def format_atomic(atomic):
+    return format(Decimal(int(atomic)) / Decimal(ATOMIC_UNITS), ".12f")
+
+def network_analytics(period):
+    if period not in ANALYTICS_WINDOWS:
+        raise ValueError("Invalid period")
+    def build():
+        info = get_info()
+        tip = max(0,int(info.get("height",0)) - 1)
+        target = max(1,int(info.get("target") or 120))
+        start = max(0,tip - ANALYTICS_WINDOWS[period] // target)
+        n = min(25,tip - start + 1)
+        heights = sorted(set(start + (tip-start)*i//(n-1) for i in range(n))) if n>1 else [tip]
+        samples = []
+        prior = None
+        for h in heights:
+            header = get_block_header(h).get("result",{}).get("block_header",{})
+            if not header:
+                continue
+            ts = int(header.get("timestamp",0))
+            difficulty = int(header.get("difficulty",0))
+            interval = None
+            if prior is not None and h > prior[0] and ts > prior[1]:
+                interval = round((ts-prior[1])/(h-prior[0]),2)
+            samples.append({
+                "height":h, "timestamp":ts, "difficulty":difficulty,
+                "hashrate":round(difficulty/target,2),
+                "avg_block_seconds":interval
+            })
+            prior = (h,ts)
+        return {"period":period, "target_seconds":target, "start_height":start,
+                "end_height":tip, "sampled_by_target_blocks":True,
+                "partial":len(samples)!=len(heights), "samples":samples}
+    return analytics_cache("network:"+period,build)
+
+def economics_analytics():
+    def build():
+        height = max(0,int(get_info().get("height",0)))
+        issued = int(get_emitted_supply(height)["emitted_atomic"])
+        recent_count = min(height,720)
+        early_count = min(height,590)
+        def emitted_interval(start,count):
+            if not count:
+                return 0
+            result = get_coinbase_tx_sum(start,count).get("result",{})
+            if result.get("status") != "OK":
+                raise RuntimeError("Emission query unavailable")
+            return int(result.get("emission_amount",0))
+        recent = emitted_interval(height-recent_count,recent_count)
+        early = emitted_interval(0,early_count)
+        since_activation = max(0,issued-early)
+        # Nominal percentage of base emissions. Per-block rounding means
+        # this is an estimate, NOT verified holdings, spending or exact accrual.
+        estimated_treasury = since_activation*2//100
+        annualized = recent*720*365//recent_count if recent_count else 0
+        annualized_pct = round(annualized/issued*100,2) if issued else None
+        verified = None
+        if height > 590:
+            try:
+                reward = enrich_block_reward(get_block(height=height-1)).get("result",{}).get("reward_breakdown",{})
+                if reward:
+                    verified = {"height":height-1,
+                                "miner_feel":format_atomic(reward["miner"]),
+                                "treasury_feel":format_atomic(reward["treasury"])}
+            except (KeyError,ValueError,TypeError,OSError,RuntimeError):
+                verified = None
+        return {
+            "height":height, "issued_feel":format_atomic(issued),
+            "recent_blocks":recent_count, "recent_emission_feel":format_atomic(recent),
+            "annualized_feel":format_atomic(annualized),
+            "annualized_issuance_percent":annualized_pct,
+            "treasury_start_height":590, "treasury_nominal_percent":2,
+            "estimated_treasury_feel":format_atomic(estimated_treasury),
+            "treasury_estimate_only":True,"latest_verified_split":verified,
+            "fees_excluded":True,"treasury_balance_known":False
+        }
+    return analytics_cache("economics",build)
+
+
 HTML = """<!doctype html>
 <html lang="en">
 <head>
@@ -997,6 +1094,21 @@ footer{
   display:none !important;
 }
 
+
+/* Scoped analytics, preserving the existing explorer layout. */
+.fe-chart-actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.fe-chart-actions button{color:#d5ddeb;background:#101b2e;border:1px solid #36435b;border-radius:10px;padding:8px 11px;font-size:13px;font-weight:700;cursor:pointer}
+.fe-chart-actions button[aria-pressed=true]{color:#ffd88c;border-color:#c39a49;background:#34291b}
+.fe-chart-actions button:focus-visible{outline:2px solid #e9bb63;outline-offset:2px}
+.fe-chart{padding:10px;border:1px solid var(--line);border-radius:14px;background:#091321}
+.fe-chart svg{width:100%;height:auto;display:block}
+.fe-chart-note{color:var(--muted);font-size:12px;line-height:1.7;margin-top:12px}
+.fe-economic-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.fe-economic-stat{background:#0c1727;border:1px solid var(--line);border-radius:12px;padding:15px;min-width:0}
+.fe-economic-stat strong{display:block;font-size:19px;color:#f1cb81;margin:10px 0;overflow-wrap:anywhere}
+.fe-proof{padding:15px;border-radius:12px;border:1px solid var(--line);margin-top:15px;font-size:13px;line-height:1.7}
+@media(max-width:950px){.fe-economic-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.fe-economic-grid{grid-template-columns:1fr}.fe-chart{padding:4px}.fe-economic-stat strong{font-size:18px}}
 </style>
 
 <!-- FEELCOIN EXPLORER SEO START -->
@@ -1388,6 +1500,36 @@ Published bootstrap nodes
 
 
 
+
+<section class="card section" id="feNetworkAnalytics">
+  <div class="section-head"><div><h3>Network Analytics</h3><div class="sub">Sampled on-chain history</div></div></div>
+  <div class="fe-chart-actions" role="group" aria-label="Chart time window">
+    <button data-fe-window="24h" aria-pressed="true" onclick="loadFeChart('24h')">~24h</button>
+    <button data-fe-window="7d" aria-pressed="false" onclick="loadFeChart('7d')">~7d</button>
+    <button data-fe-window="30d" aria-pressed="false" onclick="loadFeChart('30d')">~30d</button>
+  </div>
+  <div class="fe-chart-actions" role="group" aria-label="Chart metric">
+    <button data-fe-metric="hashrate" aria-pressed="true" onclick="setFeMetric('hashrate')">Hashrate</button>
+    <button data-fe-metric="difficulty" aria-pressed="false" onclick="setFeMetric('difficulty')">Difficulty</button>
+    <button data-fe-metric="avg_block_seconds" aria-pressed="false" onclick="setFeMetric('avg_block_seconds')">Average block time</button>
+  </div>
+  <div class="fe-chart"><svg id="feHistoricalChart" viewBox="0 0 760 210" role="img" aria-label="Historical Feelcoin network chart"></svg></div>
+  <p id="feChartNote" class="fe-chart-note" aria-live="polite">Loading historical samples...</p>
+</section>
+<section class="card section" id="feEconomicAnalytics">
+  <div class="section-head"><h3>Supply, Emission &amp; Treasury</h3><span class="sub">Protocol statistics</span></div>
+  <div class="fe-economic-grid">
+    <div class="fe-economic-stat"><div class="label">Total Protocol Issuance</div><strong id="feIssued">—</strong><div class="sub">Includes possibly lost coins</div></div>
+    <div class="fe-economic-stat"><div class="label">Recent Emission</div><strong id="feEmission">—</strong><div class="sub" id="feEmissionWindow">Latest ~720 blocks</div></div>
+    <div class="fe-economic-stat"><div class="label">Annualized Issuance</div><strong id="feAnnualized">—</strong><div class="sub">At target block rate; not a forecast</div></div>
+    <div class="fe-economic-stat"><div class="label">Est. Treasury Allocation</div><strong id="feTreasury">—</strong><div class="sub">Nominal 2% since block 590; approximate</div></div>
+  </div>
+  <div class="fe-proof"><strong>Latest verified coinbase split:</strong> <span id="feVerifiedSplit">Loading...</span>
+    <div class="fe-chart-note">The cumulative treasury figure is an estimate from protocol issuance, not an audited exact balance or spending history. Rounding may affect exact allocations. Transaction fees are excluded from newly issued supply. Privacy protects transaction amounts, wallet balances and recipients.</div>
+  </div>
+  <p class="fe-chart-note" id="feEconomicsNote" aria-live="polite"></p>
+</section>
+
 <section class="card section">
 
 <div class="section-head">
@@ -1775,6 +1917,105 @@ async function loadExplorerNetworkStatus(){
 
 }
 
+
+
+/* Independent read-only analytics: never interfere with /api/home polling. */
+let fePeriod="24h",feMetric="hashrate",feHistory=null,feRequestNumber=0;
+const feSVG="http://www.w3.org/2000/svg";
+function feNode(tag,attrs,textValue){
+  const e=document.createElementNS(feSVG,tag);
+  Object.entries(attrs||{}).forEach(function(p){e.setAttribute(p[0],String(p[1]));});
+  if(textValue!==undefined)e.textContent=textValue;
+  return e;
+}
+function fePretty(x,digits){
+  const n=Number(x);
+  return Number.isFinite(n)?n.toLocaleString(undefined,{maximumFractionDigits:digits===undefined?2:digits}):"—";
+}
+function feFEEL(v){return fePretty(v,4)+" FEEL";}
+function fePressed(key,value){
+  document.querySelectorAll("button["+key+"]").forEach(function(b){
+    b.setAttribute("aria-pressed",String(b.getAttribute(key)===value));
+  });
+}
+function setFeMetric(metric){
+  if(!["hashrate","difficulty","avg_block_seconds"].includes(metric))return;
+  feMetric=metric;fePressed("data-fe-metric",metric);renderFeChart();
+}
+async function loadFeChart(period){
+  if(!["24h","7d","30d"].includes(period))return;
+  fePeriod=period;fePressed("data-fe-window",period);
+  $("feChartNote").textContent="Loading historical samples...";
+  const request=++feRequestNumber;
+  try{
+    const response=await fetch("/api/analytics/network?period="+encodeURIComponent(period),{cache:"no-store"});
+    if(!response.ok)throw Error("HTTP "+response.status);
+    const data=await response.json();
+    if(request!==feRequestNumber)return;
+    feHistory=data;renderFeChart();
+  }catch(error){
+    if(request!==feRequestNumber)return;
+    feHistory=null;$("feHistoricalChart").replaceChildren();
+    $("feChartNote").textContent="Historical data unavailable. Live network metrics remain active.";
+  }
+}
+function renderFeChart(){
+  const svg=$("feHistoricalChart");svg.replaceChildren();
+  const values=((feHistory&&feHistory.samples)||[]).map(function(p){
+    return {h:Number(p.height),v:p[feMetric]===null?NaN:Number(p[feMetric]),ts:Number(p.timestamp)};
+  }).filter(function(p){return Number.isFinite(p.h)&&Number.isFinite(p.v);});
+  if(!values.length){$("feChartNote").textContent="No historical samples yet.";return;}
+  const lowH=Math.min(...values.map(p=>p.h)),highH=Math.max(...values.map(p=>p.h));
+  const lowV=Math.min(...values.map(p=>p.v)),highV=Math.max(...values.map(p=>p.v));
+  const margin=highV===lowV?Math.max(1,highV*.1):(highV-lowV)*.08;
+  const low=Math.max(0,lowV-margin),high=highV+margin;
+  const px=v=>64+(v-lowH)/Math.max(1,highH-lowH)*678;
+  const py=v=>175-(v-low)/Math.max(.00001,high-low)*154;
+  for(let i=0;i<5;i++){
+    const val=low+(high-low)*i/4,yy=py(val);
+    svg.appendChild(feNode("line",{x1:64,x2:742,y1:yy,y2:yy,stroke:"#354059","stroke-width":1}));
+    svg.appendChild(feNode("text",{x:57,y:yy+4,fill:"#bac7dc","text-anchor":"end","font-size":12},fePretty(val,1)));
+  }
+  svg.appendChild(feNode("polyline",{points:values.map(p=>px(p.h).toFixed(1)+","+py(p.v).toFixed(1)).join(" "),fill:"none",stroke:"#e2b65e","stroke-width":3,"stroke-linecap":"round","stroke-linejoin":"round"}));
+  values.forEach(function(p){
+    const circle=feNode("circle",{cx:px(p.h),cy:py(p.v),r:3,fill:"#f5d58c"});
+    circle.appendChild(feNode("title",{},"Block "+p.h+" — "+fePretty(p.v,2)+" — "+new Date(p.ts*1000).toUTCString()));
+    svg.appendChild(circle);
+  });
+  svg.appendChild(feNode("text",{x:64,y:202,fill:"#bac7dc","font-size":12},"Block "+fePretty(lowH,0)));
+  svg.appendChild(feNode("text",{x:742,y:202,fill:"#bac7dc","font-size":12,"text-anchor":"end"},"Block "+fePretty(highH,0)));
+  const target=feHistory.target_seconds||120;
+  $("feChartNote").textContent="Historical "+(feMetric==="avg_block_seconds"?"mean seconds per block":feMetric)+
+    " • "+values.length+" sampled headers • ~"+fePeriod+" calculated from "+target+
+    "s target block intervals (not exact wall-clock bounds)."+
+    (feHistory.partial?" Some samples were unavailable.":"");
+}
+async function loadFeEconomics(){
+  try{
+    const response=await fetch("/api/analytics/economics",{cache:"no-store"});
+    if(!response.ok)throw Error("HTTP "+response.status);
+    const d=await response.json();
+    $("feIssued").textContent=feFEEL(d.issued_feel);
+    $("feEmission").textContent=feFEEL(d.recent_emission_feel);
+    $("feEmissionWindow").textContent="Last "+fePretty(d.recent_blocks,0)+" blocks (target ~24h at 720 blocks)";
+    $("feAnnualized").textContent=d.annualized_issuance_percent===null?"—":fePretty(d.annualized_issuance_percent,2)+"% per year";
+    $("feTreasury").textContent="~"+feFEEL(d.estimated_treasury_feel);
+    const split=d.latest_verified_split;
+    if(split){
+      const link=document.createElement("a");link.href="/?q="+encodeURIComponent(split.height);link.textContent="Inspect block";
+      $("feVerifiedSplit").replaceChildren(
+        document.createTextNode("Block "+fePretty(split.height,0)+
+          ": miner "+feFEEL(split.miner_feel)+" / treasury "+feFEEL(split.treasury_feel)+" — "),link);
+    }else{$("feVerifiedSplit").textContent="No recent verifiable split available.";}
+    $("feEconomicsNote").textContent="Height "+fePretty(d.height,0)+
+      ". Annualized issuance uses recent emission and target timing, not a prediction.";
+  }catch(e){
+    $("feEconomicsNote").textContent="Economic analytics unavailable. Existing emitted-supply metric remains accessible.";
+    $("feVerifiedSplit").textContent="Unavailable";
+  }
+}
+loadFeChart("24h");
+loadFeEconomics();
 
 async function loadHome(){
 
@@ -2299,6 +2540,16 @@ class Handler(BaseHTTPRequestHandler):
                     )
                 )
 
+
+
+            if parsed.path == "/api/analytics/network":
+                period = parse_qs(parsed.query).get("period", ["24h"])[0]
+                if period not in ANALYTICS_WINDOWS:
+                    return self.send_json({"error": "Invalid period"}, 400)
+                return self.send_json(network_analytics(period))
+
+            if parsed.path == "/api/analytics/economics":
+                return self.send_json(economics_analytics())
 
             if parsed.path == "/api/home":
 
