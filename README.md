@@ -1,5 +1,9 @@
 # 🔎 Feelcoin Block Explorer
 
+<p align="center">
+  <a href="https://feelcoin.org"><img src="https://feelcoin.org/assets/feelcoin-logo-v2.png" alt="Official Feelcoin logo" width="144"></a>
+</p>
+
 **Official open-source block explorer for the Feelcoin (FEEL) network.**
 
 🌐 **Live explorer:** https://explorer.feelcoin.org
