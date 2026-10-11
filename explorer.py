@@ -1096,13 +1096,18 @@ footer{
 
 
 /* Scoped analytics, preserving the existing explorer layout. */
-.fe-chart-actions{display:flex;flex-wrap:nowrap;align-items:center;justify-content:center;gap:12px;margin:12px 0 10px;max-width:100%;overflow-x:auto;padding:1px 0 4px}
-.fe-chart-subgroup{display:flex;align-items:center;gap:8px;flex:0 0 auto}
-.fe-insights{display:flex;align-items:stretch;justify-content:center;flex-wrap:wrap;gap:8px;margin:0 0 13px}
-.fe-insight{flex:0 1 174px;min-width:112px;padding:6px 10px;background:#172234;border:1px solid #344156;border-radius:10px}
-.fe-insight-label{font-size:10px;font-weight:400;color:#98aac0}
-.fe-insight-value{font-size:14px;font-weight:500;color:#eac27b;white-space:nowrap;margin-top:3px}
-@media(max-width:700px){.fe-chart-actions{justify-content:flex-start}.fe-insight{flex:1 1 100px;padding:6px 8px}.fe-insight-value{font-size:12px}}
+.fe-chart-actions{display:flex;flex-wrap:nowrap;align-items:center;justify-content:center;gap:8px;margin:12px 0 14px;max-width:100%;overflow-x:auto;padding:1px 0 4px}
+.fe-chart-subgroup{display:flex;align-items:center;gap:7px;flex:0 0 auto}
+.fe-chart-divider{height:24px;width:1px;background:#394559;flex:0 0 1px;margin:0 2px}
+.fe-insights{display:flex;align-items:center;justify-content:center;flex:0 0 auto;flex-wrap:nowrap;gap:8px}
+.fe-insight{flex:0 0 auto;min-width:105px;padding:5px 9px;background:#172234;border:1px solid #344156;border-radius:9px}
+.fe-insight-label{font-size:10px;font-weight:400;color:#98aac0;white-space:nowrap}
+.fe-insight-value{font-size:12px;font-weight:500;color:#eac27b;white-space:nowrap;margin-top:3px}
+.fe-footer-contact{margin-left:auto;white-space:nowrap;color:#e9bf65;text-decoration:none}
+.fe-footer-contact:hover{text-decoration:underline}
+.fe-footer-contact:focus-visible{outline:2px solid #e9bb63;outline-offset:3px}
+@media(max-width:1100px){.fe-chart-actions{justify-content:flex-start}}
+@media(max-width:600px){footer .fe-footer-contact{align-self:flex-end}}
 .fe-chart-actions button{color:#d5ddeb;background:#101b2e;border:1px solid #36435b;border-radius:10px;padding:7px 10px;font-size:12px;font-weight:500;cursor:pointer}
 .fe-chart-actions button[aria-pressed=true]{color:#ffd88c;border-color:#c39a49;background:#34291b}
 .fe-chart-actions button:focus-visible{outline:2px solid #e9bb63;outline-offset:2px}
@@ -1520,11 +1525,12 @@ Published bootstrap nodes
       <button data-fe-metric="difficulty" aria-pressed="false" onclick="setFeMetric('difficulty')">Difficulty</button>
       <button data-fe-metric="avg_block_seconds" aria-pressed="false" onclick="setFeMetric('avg_block_seconds')">Average block time</button>
     </div>
-  </div>
-  <div class="fe-insights" role="status" aria-live="polite" aria-label="Selected network metric summary">
-    <div class="fe-insight"><div class="fe-insight-label">Latest sample</div><div class="fe-insight-value" id="feInsightLatest">—</div></div>
-    <div class="fe-insight"><div class="fe-insight-label">Sampled range</div><div class="fe-insight-value" id="feInsightRange">—</div></div>
-    <div class="fe-insight"><div class="fe-insight-label">Period change</div><div class="fe-insight-value" id="feInsightChange">—</div></div>
+    <span class="fe-chart-divider" aria-hidden="true"></span>
+    <div class="fe-insights" role="status" aria-live="polite" aria-label="Selected network metric summary">
+      <div class="fe-insight"><div class="fe-insight-label">Latest sample</div><div class="fe-insight-value" id="feInsightLatest">—</div></div>
+      <div class="fe-insight"><div class="fe-insight-label">Sampled range</div><div class="fe-insight-value" id="feInsightRange">—</div></div>
+      <div class="fe-insight"><div class="fe-insight-label">Period change</div><div class="fe-insight-value" id="feInsightChange">—</div></div>
+    </div>
   </div>
   <div class="fe-chart"><svg id="feHistoricalChart" viewBox="0 0 760 210" role="img" aria-label="Historical Feelcoin network chart"></svg></div>
   <p id="feChartNote" class="fe-chart-note" aria-live="polite">Loading historical samples...</p>
@@ -1606,7 +1612,7 @@ Raw RPC response
 <span id="updated">
 Loading...
 </span>
-
+<a class="fe-footer-contact" href="mailto:support@feelcoin.org">Contact us: support@feelcoin.org</a>
 </footer>
 
 </div>

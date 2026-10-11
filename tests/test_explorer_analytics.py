@@ -78,10 +78,15 @@ class ExplorerInsightsMarkupTests(unittest.TestCase):
     def test_six_buttons_share_one_centered_controls_row(self):
         html = explorer.HTML
         start = html.index('<div class="fe-chart-actions" role="toolbar"')
-        end = html.index('<div class="fe-insights"', start)
+        end = html.index('<div class="fe-chart"><svg', start)
         row = html[start:end]
         self.assertEqual(row.count('class="fe-chart-subgroup"'), 2)
         self.assertEqual(row.count("<button "), 6)
+        self.assertEqual(row.count('class="fe-insight"'), 3)
+        self.assertEqual(row.count('class="fe-chart-divider"'), 1)
+        self.assertLess(row.index('Average block time</button>'), row.index('id="feInsightLatest"'))
+        self.assertLess(row.index('id="feInsightLatest"'), row.index('id="feInsightRange"'))
+        self.assertLess(row.index('id="feInsightRange"'), row.index('id="feInsightChange"'))
         for label in ("~24h", "~7d", "~30d", "Hashrate", "Difficulty", "Average block time"):
             self.assertIn(">" + label + "</button>", row)
         self.assertIn("justify-content:center", html)
@@ -100,6 +105,14 @@ class ExplorerInsightsMarkupTests(unittest.TestCase):
         self.assertIn("s[feMetric]==null?NaN", summary_js)
         self.assertIn("if(first!==0)", summary_js)
         self.assertIn(".sort(", summary_js)
+
+    def test_footer_has_official_right_side_contact_link(self):
+        html = explorer.HTML
+        footer = html[html.index("<footer>"):html.index("</footer>")]
+        self.assertIn('href="mailto:support@feelcoin.org"', footer)
+        self.assertIn("Contact us: support@feelcoin.org", footer)
+        self.assertIn('class="fe-footer-contact"', footer)
+        self.assertIn("margin-left:auto;white-space:nowrap", html)
 
 
 if __name__ == "__main__":
