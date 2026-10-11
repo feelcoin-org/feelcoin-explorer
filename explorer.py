@@ -2007,7 +2007,7 @@ function renderFeChart(){
   svg.appendChild(feNode("text",{x:left,y:207,fill:"#bac7dc","font-size":11,"font-weight":"400"},"Block "+fePretty(lowH,0)));
   svg.appendChild(feNode("text",{x:right,y:207,fill:"#bac7dc","font-size":11,"font-weight":"400","text-anchor":"end"},"Block "+fePretty(highH,0)));
   const target=feHistory.target_seconds||120;
-  $("feChartNote").textContent="Historical "+(feMetric==="avg_block_seconds"?"mean seconds per block":feMetric)+
+  $("feChartNote").textContent="Historical "+(feMetric==="avg_block_seconds"?"mean block interval (s)":feMetric==="difficulty"?"difficulty (unitless; K=thousand, M=million, G=billion)":"hashrate (H/s)")+
     " • "+values.length+" sampled headers • ~"+fePeriod+" calculated from "+target+
     "s target block intervals (not exact wall-clock bounds)."+
     (feHistory.partial?" Some samples were unavailable.":"");
